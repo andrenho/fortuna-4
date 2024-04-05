@@ -326,6 +326,14 @@
     [
       "0a6b6e71-7152-4192-b04d-e2f91e81ba3a",
       ""
+    ],
+    [
+      "aea52790-bef2-4af9-8f02-2367c3645008",
+      "Computer"
+    ],
+    [
+      "ecc1d63c-3be9-416b-bbe6-17cafafe8c2c",
+      "IO"
     ]
   ],
   "text_variables": {}
