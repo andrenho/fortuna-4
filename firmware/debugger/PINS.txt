@@ -1,0 +1,28 @@
+ROM_WE   -- PA0
+BUSRQ    -- PA1
+NMI      -- PA2
+CLK      -- PA4
+CLK_ENA  -- PA3
+WR       -- PA5
+RD       -- PA6
+MREQ     -- PA7
+
+M1       -- PL0     [ro]
+IORQ     -- PL1
+BUSAK    -- PL2
+WAIT     -- PL3
+INT      -- PL5
+
+Y0W      -- PJ0
+RST      -- PJ1
+
+D[0..7]  -- PC[0..7]
+
+A[0..7]  -- PF[0..7]
+A[8..15] -- PK[0..7]
+
+A16      -- PB4     [ro]
+A17      -- PB5
+A18      -- PB6
+
+RAMONLY  -- PD0     [ro]
