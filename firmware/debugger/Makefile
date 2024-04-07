@@ -3,7 +3,7 @@
 #
 
 # Project name
-PROJECT=fortunabox-dbg
+PROJECT=fortuna4-dbg
 
 # Object files (one for each source file)
 OBJECTS=main.o buffer.o comm.o random.o post.o uart.o bus.o memory.o z80.o io.o
