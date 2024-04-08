@@ -4,119 +4,132 @@
 #include <avr/cpufunc.h>
 
 #define SET_PIN(port, pin, v) { if (v) port |= _BV(pin); else port &= ~_BV(pin); }
+#define SET_DIR SET_PIN
+#define GET_PIN(port, pin) ((port & _BV(pin)) ? 1 : 0)
 
 namespace bus {
 
 void init()
 {
-    DDRA = 0b00010111;   // rom_we, busrq, nmi, clk, clk_ena
-    DDRJ = 0b00000010;   // rst
+    SET_DIR(DDRC, DDC3, 1)   // NMI
+    SET_DIR(DDRK, DDK0, 1)   // CLKENA
+    SET_DIR(DDRK, DDK6, 1)   // BUSRQ
+    SET_DIR(DDRF, DDF4, 1)   // RST
+    SET_DIR(DDRF, DDF6, 1)   // CLK
 
-    set_rom_we(1);
     set_busrq(1);
     set_nmi(1);
     set_rst(0);          // put Z80 in reset mode
 
     release_mem();       // set memory pins as pull up
 
-    PORTA &= ~_BV(PA4);  // clock initial position = 0
+    PORTF &= ~(1 << PF6);  // clock initial position = 0
 }
-
-void set_rom_we(bool v) { SET_PIN(PORTA, PA0, v) }
 
 void set_nmi(bool v)
 {
-    DDRA |= (1 << DDA2);
-    SET_PIN(PORTA, PA2, v)
-    if (v != 0) DDRA &= ~(1 << DDA2);
+    // nmi = PC3
+    SET_DIR(DDRC, DDC3, 1)
+    SET_PIN(PORTC, PC3, v)
+    if (v != 0) SET_DIR(DDRC, DDC3, 0)
 }
 
-void set_busrq(bool v) {
-    DDRA |= (1 << DDA1);
-    SET_PIN(PORTA, PA1, v)
-    if (v != 0) DDRA &= ~(1 << DDA1);
+void set_busrq(bool v)
+{
+    // busrq = PK6
+    SET_DIR(DDRK, DDK6, 1)
+    SET_PIN(PORTK, PK6, v)
+    if (v != 0) SET_DIR(DDRK, DDK6, 0)
 }
 
-void set_rst(bool v) {
-    DDRJ |= (1 << DDJ1);
-    SET_PIN(PORTJ, PJ1, v)
-    if (v != 0) DDRJ &= ~(1 << DDJ1);
+void set_rst(bool v)
+{
+    // rst = PF4
+    SET_DIR(DDRF, DDF4, 1)
+    SET_PIN(PORTF, PF4, v)
+    if (v != 0) SET_DIR(DDRF, DDF4, 0)
 }
 
 bool get_busak()
 {
-    return PINL & _BV(PINL2);
+    // busak = PC5
+    return GET_PIN(PINC, PINC5);
 }
 
 bool get_m1()
 {
-    return PINL & _BV(PINL0);
-}
-
-bool get_int()
-{
-    return PINL & _BV(PINL5);
+    // m1 = PK2
+    return GET_PIN(PINK, PINK2);
 }
 
 bool get_wait()
 {
-    return PINL & _BV(PINL3);
+    // wait = PC1
+    return GET_PIN(PINC, PINC1);
 }
 
 bool get_iorq()
 {
-    return PINL & _BV(PINL1);
-}
-
-bool get_ramonly()
-{
-    return PIND & _BV(PIND0);
+    // iorq = PK4
+    return GET_PIN(PINK, PINK4);
 }
 
 void pulse_clk()
 {
-    PORTA |= _BV(PA4);
+    // clk = PF6
+    SET_PIN(PORTA, PA4, 1);
     _NOP();
-    PORTA &= ~_BV(PA4);
+    SET_PIN(PORTA, PA4, 0);
 }
 
 void release_clk()
 {
-    DDRA &= ~0b1000;
-}
-
-void pulse_y0w()
-{
-    DDRJ |= 0b1;
-    SET_PIN(PORTJ, PJ0, false);
-    _NOP();
-    SET_PIN(PORTJ, PJ0, true);
-    DDRJ &= ~0b1;
+    SET_DIR(DDRF, DDF6, 0);
 }
 
 MemPins get_mem()
 {
-    uint8_t a = PINA;
+    // wr = PF3
+    // rd = PK7
+    // mreq = PC4
     return {
-        (bool) (a & _BV(5)),
-        (bool) (a & _BV(6)),
-        (bool) (a & _BV(7))
+        (bool) GET_PIN(PINF, PINF3),
+        (bool) GET_PIN(PINK, PINK7),
+        (bool) GET_PIN(PINC, PINC4),
     };
 }
 
 void set_mem(MemPins mem)
 {
-    DDRA |= 0b11100000;
-    SET_PIN(PORTA, PA5, mem.wr);
-    SET_PIN(PORTA, PA6, mem.rd);
-    SET_PIN(PORTA, PA7, mem.mreq);
+    // wr = PF3
+    SET_DIR(DDRF, DDF3, 1);
+    SET_PIN(PORTF, PORTF3, mem.wr);
+
+    // rd = PK7
+    SET_DIR(DDRK, DDK7, 1);
+    SET_PIN(PORTK, PORTK3, mem.rd);
+
+    // mreq = PC4
+    SET_DIR(DDRC, DDC4, 1);
+    SET_PIN(PORTC, PORTC4, mem.mreq);
 }
 
 void release_mem()
 {
-    DDRA &= ~0b11100000;
-    PORTA |= 0b11100000;   // set as pullups
+    // wr = PF3
+    SET_DIR(DDRF, DDF3, 0);
+    SET_PIN(PORTF, PORTF3, 1);  // set as pull-up
+
+    // rd = PK7
+    SET_DIR(DDRK, DDK7, 0);
+    SET_PIN(PORTK, PORTK3, 1);  // pull-up
+
+    // mreq = PC4
+    SET_DIR(DDRC, DDC4, 0);
+    SET_PIN(PORTC, PORTC4, 1);   // pull-up
 }
+
+// TODO --------
 
 uint8_t get_data()
 {

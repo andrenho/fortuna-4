@@ -13,7 +13,6 @@ namespace bus {
 
 void     init();
 
-void     set_rom_we(bool v);
 void     set_nmi(bool v);
 void     set_busrq(bool v);
 
@@ -21,15 +20,11 @@ void     set_rst(bool v);
 
 bool     get_busak();
 bool     get_m1();
-bool     get_int();
 bool     get_wait();
 bool     get_iorq();
-bool     get_ramonly();
 
 void     pulse_clk();
 void     release_clk();
-
-void     pulse_y0w();
 
 MemPins  get_mem();
 void     set_mem(MemPins mem);

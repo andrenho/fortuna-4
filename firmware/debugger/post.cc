@@ -87,6 +87,7 @@ static bool write_memory_banks()
 {
     return false;  // TODO
 
+#if 0
     // This test write one byte into each memory bank at the same address.
     // It also tests if the low memory remains the same when the banks change.
 
@@ -126,12 +127,14 @@ static bool write_memory_banks()
 fail:
     io::write(0, 0);
     return false;
+#endif
 }
 
 static bool write_ramonly()
 {
     return false; // TODO
 
+#if 0
     uint16_t addr;
     do { addr = random::nextw(); } while (addr >= 0x2000);
 
@@ -186,6 +189,7 @@ size_t run_tests(uint32_t* results)
 #undef TEST
 
     return count;
+#endif
 }
 
 }

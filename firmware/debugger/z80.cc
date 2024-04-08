@@ -12,7 +12,7 @@ static LastOp current = {0, 0 };
 
 bool is_present()
 {
-    return true;  // TODO
+    return false;  // TODO
 }
 
 void release_bus()

@@ -6,11 +6,11 @@
 PROJECT=fortuna4-dbg
 
 # Object files (one for each source file)
-OBJECTS=main.o buffer.o comm.o random.o post.o uart.o bus.o memory.o z80.o io.o
+OBJECTS=main.o buffer.o comm.o random.o post.o uart.o bus.o memory.o z80.o
 
 # Avrdude configuration to connect on the PI. See avrdude.conf.
 AVRDUDE_CONFIG=wiring
-SERIAL_PORT=/dev/tty.usbserial-120
+SERIAL_PORT=/dev/tty.usbserial-110
 
 # Microcontroller
 MCU_GCC=atmega2560
