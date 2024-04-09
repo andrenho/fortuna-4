@@ -133,7 +133,8 @@ void release_mem()
 
 uint8_t get_data()
 {
-    return PINC;
+    // D[0..1] = PA[0..1], D[2..7] = PL[2..7]
+    return (PINA & 0b11) | (PINL & 0b11111100);
 }
 
 void set_data(uint8_t data)
