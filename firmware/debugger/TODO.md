@@ -1,0 +1,2 @@
+- [ ] Adjust pins
+- [ ] Clock enable logic

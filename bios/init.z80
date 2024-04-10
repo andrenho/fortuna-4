@@ -1,0 +1,31 @@
+ACIA_RESET	= 11b
+ACIA_CONFIG	= 10010110b     ; clock divider 64, 8N1, TX int disabled, RX int enabled
+
+init:
+	;
+	; Initialize 68C50 (UART)
+	;
+
+	ld	a, ACIA_RESET
+	out	(IO_UART_CONFIG), a
+
+	ld	a, ACIA_CONFIG
+	out	(IO_UART_CONFIG), a
+
+	;
+	; Print welcome message
+	;
+
+	ld	hl, .welcome
+	call	SYS_PRINT
+
+	; jump to monitor
+
+	rst	08h
+
+.halt:	jr	.halt
+
+.welcome:
+	asciiz	13, 10, "Welcome to Fortuna Box!", 13, 10
+
+; vim:ts=8:sw=8:sts=8:noexpandtab

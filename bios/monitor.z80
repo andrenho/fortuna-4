@@ -1,0 +1,346 @@
+BUFFER_SZ   = 128
+BUFFER_ADDR = 2020h
+DATA_1      = 20a0h
+DATA_2      = 20a2h
+
+TOK_NUL   = 0
+TOK_HEX   = 'H'
+TOK_ERROR = '?'
+
+	; =============================================
+	;
+	; Run the monitor
+	;
+	; =============================================
+
+monitor:
+	rst	10h
+
+next_line:
+	ld	hl, str_prompt
+	call	SYS_PRINT
+
+	ld	a, BUFFER_SZ
+	ld	hl, BUFFER_ADDR
+	call	SYS_INPUT
+
+	; =============================================
+	; 
+	; State machine
+	;   diagram: https://github.com/andrenho/fortuna-box/wiki/Monitor
+	;
+	; =============================================
+
+	macro	NEXT
+		cp	\1
+		jp	z, \2
+	endmacro
+
+	macro	EXPECT
+		cp	\1
+		jp	nz, syntax_error
+	endmacro
+
+	macro	JPTOK
+		cp	\1
+		jp	z, \3
+		cp	\2
+		jp	z, \3
+	endmacro
+
+.state_machine:
+	call	parse_next_token
+	NEXT	TOK_NUL, next_line	; skip to next state depending on 1st token
+	NEXT	TOK_HEX, .sm_addr
+	NEXT	':', sm_mem_write
+	JPTOK	'X', 'x', exit_monitor
+	JPTOK	'I', 'i', .sm_input
+	JPTOK	'O', 'o', .sm_output
+	JPTOK	'R', 'r', .sm_run
+	jp	syntax_error		; if none of the above, syntax error
+
+.sm_addr:
+	ld	(DATA_1), de
+	ld	(DATA_2), de
+
+	call	parse_next_token
+	NEXT	TOK_NUL, print_mem
+	NEXT	'.', .sm_mem_read
+	NEXT	':', sm_mem_write
+	jp	syntax_error
+
+.sm_mem_read:
+	call	parse_next_token
+	EXPECT	TOK_HEX
+	ld	(DATA_2), de
+
+	call	parse_next_token
+	EXPECT	TOK_NUL
+	jp	print_mem
+
+.sm_input:
+	call	parse_next_token
+	EXPECT	TOK_HEX
+	ld	(DATA_1), de
+
+	call	parse_next_token
+	EXPECT	TOK_NUL
+	jp	input
+
+.sm_output:
+	call	parse_next_token
+	EXPECT	TOK_HEX
+	ld	(DATA_1), de
+
+	call	parse_next_token
+	EXPECT	':'
+
+	call	parse_next_token
+	EXPECT	TOK_HEX
+	ld	(DATA_2), de
+
+	call	parse_next_token
+	EXPECT	TOK_NUL
+	jp	output
+
+.sm_run:
+	call	parse_next_token
+	EXPECT	TOK_HEX
+	ld	(DATA_1), de
+
+	call	parse_next_token
+	EXPECT	TOK_NUL
+	jp	run
+
+
+sm_mem_write:
+	call	parse_next_token
+	NEXT	TOK_HEX, write_mem
+	NEXT	TOK_NUL, next_line
+	jr	syntax_error
+
+syntax_error:
+	ld	hl, str_syntax_error
+	call	SYS_PRINT
+	jp	next_line
+
+	; =============================================
+	; 
+	; Parse the next token in HL string. Returns:
+	;    A - the token
+	;    DE - if token is hex, the value
+	;    HL - pointer to next token
+	;
+	; =============================================
+
+parse_next_token:
+	ld	a, (hl)		; A = next char
+	ld	b, TOK_ERROR	; B = token to return if hex
+	ld	de, 0		; DE = the hex value
+
+	cp	' '		; skip spaces
+	jr	nz, .check_token_chars
+	inc	hl
+	jr	parse_next_token
+
+.check_token_chars:
+	inc	hl
+
+	cp	TOK_NUL		; check for null char
+	ret	z
+
+	push	hl
+	ld	hl, str_tokens
+	call	SYS_STRFIND
+	pop	hl
+	ret	nc		; return if char was found...
+
+	dec	hl		; ... if not roll back and continue
+
+.check_digit:
+	cp	'0'
+	jr	c, .check_ucase_hex
+	cp	'9' + 1
+	jr	nc, .check_ucase_hex
+
+	sub	'0'
+	jr	.add_hex_in_a
+
+.check_ucase_hex:
+	cp	'A'
+	jr	c, .check_lcase_hex
+	cp	'F' + 1
+	jr	nc, .check_lcase_hex
+
+	sub	'A' - 0ah
+	jr	.add_hex_in_a
+	
+.check_lcase_hex:
+	cp	'a'
+	jr	c, .not_hex
+	cp	'f' + 1
+	jr	nc, .not_hex
+
+	sub	'a' - 0ah
+	jr	.add_hex_in_a
+	
+.not_hex:
+	ld	a, b
+	ret
+
+.add_hex_in_a:
+	ld	b, TOK_HEX	; B = is HEX
+
+	push	hl		; rotate left DE (4 bits)
+	ld	h, d
+	ld	l, e
+	add	hl, hl
+	add	hl, hl
+	add	hl, hl
+	add	hl, hl
+	ld	d, h
+	ld	e, l
+	pop	hl
+
+	or	a, e		; DE |= A
+	ld	e, a
+
+	inc	hl		; next char
+	ld	a, (hl)
+	jr	.check_digit
+
+	; =============================================
+	; 
+	; Print memory from DATA_1 to DATA_2
+	; 
+	; =============================================
+print_mem:
+	ld	de, (DATA_1)		; DE = current address
+
+.print_address
+	ld	a, 4			; print address
+	call	SYS_PRINTHEX
+	ld	a, ':'
+	call	SYS_PUTC
+	ld	a, ' '
+	call	SYS_PUTC
+
+.print_next_data:
+	push	de			; print data
+	ld	a, (de)
+	ld	e, a
+	ld	a, 2
+	call	SYS_PRINTHEX
+	pop	de
+	ld	a, ' ' 
+	call	SYS_PUTC
+
+	inc	de			; increment current address
+
+	; if DE == DATA_2, print enter and return
+	ld	hl, (DATA_2)		
+	inc	hl
+	call	SYS_COMPARE_16
+	jp	nz, .check_for_newline
+
+	call	print_enter		
+	jp	next_line		; return
+
+	; if address ends with 0x0 or 0x8, print ENTER and then the address
+.check_for_newline:
+	ld	a, e
+	and	0xf
+	jr	z, .newline_and_addr
+	cp	0x8
+	jr	z, .newline_and_addr
+
+	jr	.print_next_data		; no newline
+.newline_and_addr:
+	call	print_enter
+	jp	.print_address
+
+	; =============================================
+	; 
+	; Write to memory (address: DATA_1, data: E)
+	; 
+	; =============================================
+write_mem:
+	push	hl
+	ld	hl, (DATA_1)		; write to memory
+	ld	(hl), e
+	inc	hl			; increment address pointer
+	ld	(DATA_1), hl
+	pop	hl
+	jp	sm_mem_write		; continue parsing data
+
+	; =============================================
+	; 
+	; I/O input (port: DATA_1)
+	; 
+	; =============================================
+input:
+	ld	bc, (DATA_1)
+	ld	a, 2
+	ld	e, c
+	call	SYS_PRINTHEX
+	ld	a, ':'
+	call	SYS_PUTC
+	ld	a, ' '
+	call	SYS_PUTC
+	in	e, (c)
+	ld	a, 2
+	call	SYS_PRINTHEX
+	call	print_enter
+	jp	next_line
+
+	; =============================================
+	; 
+	; I/O output (port: DATA_1, value: DATA_2)
+	; 
+	; =============================================
+output:
+	ld	bc, (DATA_1)
+	ld	de, (DATA_2)
+	out	(c), e
+	jp	next_line
+
+	; =============================================
+	; 
+	; Exit monitor
+	; 
+	; =============================================
+run:
+	call	cleanup
+	ld	hl, (DATA_1)
+	jp	(hl)
+
+exit_monitor:
+	call	cleanup
+	ret
+
+cleanup:
+	ret
+
+	; =============================================
+	; 
+	; Strings
+	; 
+	; =============================================
+
+print_enter:
+	ld	a, 13
+	call	SYS_PUTC
+	ld	a, 10
+	call	SYS_PUTC
+	ret
+
+str_tokens:
+	asciiz	13, ".:rRiIoOxX"
+
+str_prompt:
+	asciiz "* "
+
+str_syntax_error:
+	asciiz "Syntax error", 13, 10
+
+; vim:ts=8:sw=8:sts=8:noexpandtab

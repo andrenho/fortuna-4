@@ -8,7 +8,6 @@
 
 #include "bus.hh"
 #include "buffer.hh"
-#include "io.hh"
 #include "memory.hh"
 #include "random.hh"
 
@@ -164,10 +163,12 @@ static bool write_ramonly()
 fail:
     io::write(0, 0);
     return false;
+#endif
 }
 
 size_t run_tests(uint32_t* results)
 {
+#if 0
     size_t count = 0;
     *results = 0;
     

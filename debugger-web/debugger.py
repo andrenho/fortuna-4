@@ -78,7 +78,7 @@ class Serial:
             sys.exit(1)
 
     def get_response(self, convert_to_int=True):
-        self.ser.readline()  # discard request
+        self.ser.readline()
         r = self.ser.readline().decode('utf-8').replace('\r', '').replace('\n', '')
         if DEBUG != 0:
             print("<- " + r)

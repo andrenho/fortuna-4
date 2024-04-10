@@ -1,0 +1,26 @@
+TOP = 2014h
+STACK_SAVE = 2014h
+
+	ld	(STACK_SAVE), sp
+	ld	sp, TOP
+	
+	push	iy		; IY  = 0x2012
+	push	ix		; IX  = 0x2010
+	exx
+	push	hl		; HL' = 0x200e
+	push	de		; DE' = 0x200c
+	push	bc		; BC' = 0x200a
+	push	af		; AF' = 0x2008
+	exx
+	push	hl		; HL  = 0x2006
+	push	de		; DE  = 0x2004
+	push	bc		; BC  = 0x2002
+	push	af		; AF  = 0x2000
+
+	ld	sp, (STACK_SAVE)
+	ret
+
+	; important: if any instructions are added here, the syscall initial location
+	;            must be changed
+
+; vim:ts=8:sw=8:sts=8:noexpandtab

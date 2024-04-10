@@ -1,0 +1,31 @@
+	org	80h
+
+	;
+	; UART
+	;
+
+SYS_PUTC:	jp	sys_putc
+SYS_GETC:	jp	sys_getc
+SYS_GETCW:	jp	sys_getcw
+SYS_PRINT:	jp	sys_print
+SYS_INPUT:	jp	sys_input
+SYS_PRINTHEX:	jp	sys_printhex
+
+	;
+	; Arithmetic
+	;
+
+SYS_COMPARE_16:	jp	sys_compare_16
+
+	;
+	; Strings
+	;
+
+SYS_STRFIND:	jp	sys_strfind
+
+
+	include	syscalls/sys_uart.z80
+	include	syscalls/sys_arith.z80
+	include	syscalls/sys_str.z80
+
+; vim:ts=8:sw=8:sts=8:noexpandtab

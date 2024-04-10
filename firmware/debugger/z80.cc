@@ -53,7 +53,7 @@ StepCycleStatus step_cycle()
         bus::get_iorq(),
         bus::get_busak(),
         bus::get_wait(),
-        bus::get_int(),
+        1,  // TODO
         bus::get_mem()
     };
 }
@@ -98,7 +98,7 @@ StepStatus step_nmi()
     uint16_t sp = ram(0x2014);
     StepStatus ss = {
             ram(0x2000), ram(0x2002), ram(0x2004), ram(0x2006), ram(0x2008), ram(0x200a), ram(0x200c), ram(0x200e),
-            ram(0x2010), ram(0x2012), sp, 0, {0}, bus::get_addr_high(), bus::get_ramonly(), true
+            ram(0x2010), ram(0x2012), sp, 0, {0}, bus::get_addr_high(), true, true
     };
 
     // get stack

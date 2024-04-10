@@ -1,0 +1,40 @@
+	;===========================================
+	;
+	; SYS_STRFIND - find a char in a string
+	;   A - char to look for
+	;   HL - the string
+	;   Returns:
+	;     HL - string location
+	;     C flag - 0 if found
+	;
+	;===========================================
+sys_strfind:
+	push	af
+	push	bc
+	ld	b, a
+
+.next_char:
+	ld	a, (hl)		; check next char
+
+	cp	0		; if end of string, return
+	jr	z, .not_found
+
+	cp	b		; if char found, return
+	jr	z, .found
+
+	inc	hl
+	jr	.next_char
+
+.found:
+	pop	bc
+	pop	af
+	or	a		; reset carry flag
+	ret
+
+.not_found:
+	pop	bc
+	pop	af
+	scf			; set carry flag
+	ret
+
+; vim:ts=8:sw=8:sts=8:noexpandtab
