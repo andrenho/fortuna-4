@@ -53,14 +53,22 @@ class Fortuna4Tests(unittest.TestCase):
         self.assertTrue(r)
         self.assertEqual(v[1], data)
 
-'''
     def test_whole_ram(self):
         self.ack()
-        for i in range(0, 255):
-            address = i * 256
-            data = [random.randrange(255) for _ in range(256)]
-            self.send('W', [address, 256, data])
-            '''
+        for i in range(0, 256 * 4):
+            if random.randrange(20) == 0:  # one chance in 20
+                address = i * 64
+                data = [random.randrange(255) for _ in range(64)]
+                args = [address, len(data)]
+                args.extend(data)
+                print(args)
+                self.send('W', args)
+                self.assertTrue(self.get_response()[0])
+                self.send('R', [address, len(data)])
+                r, v = self.get_response()
+                self.assertTrue(r)
+                self.assertEqual(v[1:], data)
+
 
 if __name__ == '__main__':
     unittest.main()
