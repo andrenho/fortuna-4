@@ -2,6 +2,8 @@
 # Configuration
 #
 
+SERIAL_PORT=`./finddbg.py`
+
 # Project name
 PROJECT=fortuna4-dbg
 
@@ -10,7 +12,6 @@ OBJECTS=main.o buffer.o comm.o random.o post.o uart.o bus.o memory.o z80.o
 
 # Avrdude configuration to connect on the PI. See avrdude.conf.
 AVRDUDE_CONFIG=wiring
-SERIAL_PORT=/dev/tty.usbserial-120
 
 # Microcontroller
 MCU_GCC=atmega2560

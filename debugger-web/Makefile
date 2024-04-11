@@ -10,7 +10,7 @@ OBJECTS=main.o buffer.o comm.o random.o post.o uart.o bus.o memory.o z80.o io.o
 
 # Avrdude configuration to connect on the PI. See avrdude.conf.
 AVRDUDE_CONFIG=wiring
-SERIAL_PORT=/dev/tty.usbserial-120
+SERIAL_PORT=/dev/tty.usbserial-140
 
 # Microcontroller
 MCU_GCC=atmega2560

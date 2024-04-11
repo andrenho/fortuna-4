@@ -7,12 +7,10 @@
 
 int main()
 {
-    _delay_ms(100);
-
+    uart_init();
     random::init();
     bus::init();
     z80::init();
-    uart_init();
 
     z80::reset();
 
