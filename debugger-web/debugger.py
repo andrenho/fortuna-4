@@ -253,14 +253,17 @@ class Server(http.server.SimpleHTTPRequestHandler):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('source')
-parser.add_argument('-p', '--serial-port', required=True)
 parser.add_argument('-l', '--log', action='store_true')
 args = parser.parse_args()
 
 if args.log:
     DEBUG = 1
 
-serial = Serial(args.serial_port)
+result = subprocess.run("./finddbg.py", stdout=subprocess.PIPE, shell=True)
+if result.returncode != 0:
+	raise Exception("Failed to find a serial port: " + result.stdout.decode("utf-8"))
+serial_port = result.stdout.decode("utf-8").rstrip()
+serial = Serial(serial_port)
 
 socketserver.TCPServer.allow_reuse_address = True
 print("Listening on 8000...")
