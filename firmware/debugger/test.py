@@ -6,8 +6,8 @@ import time
 import unittest
 import os
 
-class Fortuna4Tests(unittest.TestCase):
 
+class Fortuna4Tests(unittest.TestCase):
     ser = None
 
     @classmethod
@@ -51,7 +51,9 @@ class Fortuna4Tests(unittest.TestCase):
             exe += '_macos'
         with open('src.z80', 'w') as f:
             f.write(source)
-        cp = subprocess.run([exe, '-chklabels', '-Llo', '-ignore-mult-inc', '-nosym', '-x', '-Fbin', '-o', 'rom.bin', 'src.z80'], capture_output=True, text=True)
+        cp = subprocess.run(
+            [exe, '-chklabels', '-Llo', '-ignore-mult-inc', '-nosym', '-x', '-Fbin', '-o', 'rom.bin', 'src.z80'],
+            capture_output=True, text=True)
         os.remove('src.z80')
 
         if cp.returncode != 0:
@@ -74,8 +76,10 @@ class Fortuna4Tests(unittest.TestCase):
     def steps(self, steps):
         self.send('X')
         assert self.get_response()[0]
+        self.send('S')
+        assert self.get_response()[0]
         for _ in range(steps):
-            self.send('s')
+            self.send('S')
             assert self.get_response()[0]
 
     def read_ram(self, addr):
@@ -113,12 +117,14 @@ class Fortuna4Tests(unittest.TestCase):
 
     def test_z80_write_to_mem(self):
         self.ack()
+        byte = random.randrange(255)
+        addr = random.randrange(10, 64 * 1024)
         self.upload('''
-            ld a, 0x38
-            ld (0x8), a
+            ld a, ''' + hex(byte) + '''
+            ld (''' + hex(addr) + '''), a
         ''')
-        self.steps(30)
-        self.assertEqual(self.read_ram(0x8), 0x38)
+        self.steps(2)
+        self.assertEqual(self.read_ram(addr), byte)
 
 
 if __name__ == '__main__':
