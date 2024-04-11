@@ -1,9 +1,10 @@
+import platform
 import random
 import serial
 import subprocess
 import time
 import unittest
-
+import os
 
 class Fortuna4Tests(unittest.TestCase):
 
@@ -42,6 +43,47 @@ class Fortuna4Tests(unittest.TestCase):
     def test_ack(self):
         self.assertTrue(self.ack())
 
+    def compile(self, source):
+        exe = '../../debugger-web/vasmz80_oldstyle'
+        if platform.system() == 'Windows':
+            exe += '.exe'
+        if platform.system() == 'Darwin':
+            exe += '_macos'
+        with open('src.z80', 'w') as f:
+            f.write(source)
+        cp = subprocess.run([exe, '-chklabels', '-Llo', '-ignore-mult-inc', '-nosym', '-x', '-Fbin', '-o', 'rom.bin', 'src.z80'], capture_output=True, text=True)
+        os.remove('src.z80')
+
+        if cp.returncode != 0:
+            raise Exception(cp.stderr)
+
+        rom = None
+        if os.path.exists('rom.bin'):
+            with open('rom.bin', 'rb') as f:
+                rom = [x for x in bytearray(f.read())]
+            os.remove('rom.bin')
+        return rom
+
+    def upload(self, source):
+        rom = self.compile(source)
+        args = [0, len(rom)]
+        args.extend(rom)
+        self.send('W', args)
+        assert self.get_response()[0]
+
+    def steps(self, steps):
+        self.send('X')
+        assert self.get_response()[0]
+        for _ in range(steps):
+            self.send('s')
+            assert self.get_response()[0]
+
+    def read_ram(self, addr):
+        self.send('R', [addr, 1])
+        r, v = self.get_response()
+        assert r
+        return v[1]
+
     def test_ram_one_byte(self):
         self.ack()
         addr = random.randrange(64 * 1024 - 1)
@@ -68,6 +110,15 @@ class Fortuna4Tests(unittest.TestCase):
                 r, v = self.get_response()
                 self.assertTrue(r)
                 self.assertEqual(v[1:], data)
+
+    def test_z80_write_to_mem(self):
+        self.ack()
+        self.upload('''
+            ld a, 0x38
+            ld (0x8), a
+        ''')
+        self.steps(30)
+        self.assertEqual(self.read_ram(0x8), 0x38)
 
 
 if __name__ == '__main__':
