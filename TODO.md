@@ -1,5 +1,5 @@
 # Preparation
-- [ ] Redo findserial.py (Mac and Linux)
+- [x] Redo findserial.py (Mac and Linux)
 - [ ] Write a python library to interact with debugger
 - [ ] Reorganize source code
 

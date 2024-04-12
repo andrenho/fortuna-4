@@ -1,1 +1,0 @@
-../firmware/debugger/finddbg.py

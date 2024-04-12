@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import platform
 import random
 import serial
@@ -12,7 +14,7 @@ class Fortuna4Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        result = subprocess.run("./finddbg.py", stdout=subprocess.PIPE, shell=True)
+        result = subprocess.run("../../tools/findserial.py dbg", stdout=subprocess.PIPE, shell=True)
         if result.returncode != 0:
             raise Exception("Failed to find a serial port: " + result.stdout.decode("utf-8"))
         serial_port = result.stdout.decode("utf-8").rstrip()

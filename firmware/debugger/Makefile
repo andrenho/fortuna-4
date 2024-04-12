@@ -2,7 +2,7 @@
 # Configuration
 #
 
-SERIAL_PORT=`./finddbg.py`
+SERIAL_PORT=`../../tools/findserial.py dbg`
 
 # Project name
 PROJECT=fortuna4-dbg
