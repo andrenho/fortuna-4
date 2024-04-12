@@ -43,6 +43,8 @@ class Fortuna:
             exe += '.exe'
         if platform.system() == 'Darwin':
             exe += '_macos'
+        if platform.machine() == 'armv71':
+            exe += '_rpi'
         with open('src.z80', 'w') as f:
             f.write(source)
         cp = subprocess.run(
