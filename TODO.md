@@ -1,8 +1,8 @@
 # Preparation
 - [x] Redo findserial.py (Mac and Linux)
 - [x] Write a python library to interact with debugger
-- [ ] Adapt debugger to the library
-- [ ] Reorganize source code
+- [x] Adapt debugger to the library
+- [x] Reorganize source code
 
 # I/O board
 - [ ] I/O using PIO

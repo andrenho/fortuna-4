@@ -39,7 +39,7 @@ const listeners = document.addEventListener("keydown", (e) => {
 function tabSelect(tab) {
     const el = e(`tab-${tab}`);   
     if (el) {
-        for (const elem of ["code", "memory", "selftest"]) {
+        for (const elem of ["code", "memory" /* , "selftest" */]) {
             e(`tab-${elem}`).classList.remove("tab-selected");
             e(elem).style.display = "none";
         }

@@ -5,6 +5,7 @@ import serial
 import subprocess
 import time
 
+
 class Fortuna:
 
     def __init__(self, debug=True, project_root="../.."):
@@ -40,7 +41,10 @@ class Fortuna:
         self.send('A')
         return self.get_response()[0]
 
-    def compile(self, source):
+    def compile(self, source=None, filename=None):
+        if source == None and filename == None:
+            raise Exception("Use either a source or a filename")
+
         exe = self.project_root + '/tools/compiler/vasmz80_oldstyle'
         if platform.system() == 'Windows':
             exe += '.exe'
@@ -48,25 +52,35 @@ class Fortuna:
             exe += '_macos'
         if platform.machine() == 'armv71':
             exe += '_rpi'
-        with open('src.z80', 'w') as f:
-            f.write(source)
+
+        if source != None:
+            with open('src.z80', 'w') as f:
+                f.write(source)
+
         cp = subprocess.run(
-            [exe, '-chklabels', '-Llo', '-ignore-mult-inc', '-nosym', '-x', '-Fbin', '-o', 'rom.bin', 'src.z80'],
-            capture_output=True, text=True)
-        os.remove('src.z80')
+            [exe, '-chklabels', '-L', 'listing.txt', '-Llo', '-ignore-mult-inc', '-nosym', '-x', '-Fbin', '-o',
+             'rom.bin',
+             filename or "src.z80"], capture_output=True, text=True)
+
+        if source != None:
+            os.remove('src.z80')
 
         if cp.returncode != 0:
-            raise Exception(cp.stderr)
+            return {'stderr': cp.stderr, 'status': cp.returncode}
 
         rom = None
+        with open('listing.txt', 'r') as f:
+            dbg_source = f.read()
+        if os.path.exists('listing.txt'):
+            os.remove('listing.txt')
         if os.path.exists('rom.bin'):
             with open('rom.bin', 'rb') as f:
                 rom = [x for x in bytearray(f.read())]
             os.remove('rom.bin')
-        return rom
+        return {'src': dbg_source, 'rom': rom, 'stdout': cp.stdout, 'stderr': cp.stderr, 'status': cp.returncode}
 
     def upload(self, source):
-        rom = self.compile(source)
+        rom = self.compile(source=source)['rom']
         args = [0, len(rom)]
         args.extend(rom)
         self.send('W', args)
@@ -92,3 +106,77 @@ class Fortuna:
         args.extend(bytes)
         self.send('W', args)
         assert self.get_response()[0]
+
+    def memory_page(self, page):
+        self.send('R', [page * 0x100, 256])
+        ok, data = self.get_response()
+        return data[1:] if ok else None
+
+    def memory_set(self, address, data):
+        self.send('W', [address, len(data)] + data)
+        ok, _ = self.get_response()
+        return ok
+
+    def step_cycle(self):
+        self.send('s')
+        ok, r = self.get_response()
+        data, addr, m1, iorq, busak, wait, int_, wr, rd, mreq = r
+        return {
+            'data': data,
+            'addr': addr,
+            'm1': m1 == 1,
+            'iorq': iorq == 1,
+            'busak': busak == 1,
+            'wait': wait == 1,
+            'int': int_ == 1,
+            'wr': wr == 1,
+            'rd': rd == 1,
+            'mreq': mreq == 1
+        }
+
+    def step(self):
+        self.send('S')
+        ok, r = self.get_response()
+        return r[0]
+
+    def step_status(self, r):
+        if len(r) == 1:
+            return {'pc': r[0]}
+        else:
+            af, bc, de, hl, afx, bcx, dex, hlx, ix, iy, sp, pc, st0, st1, st2, st3, st4, st5, st6, st7, bank, ramonly = r
+            return {
+                'af': af, 'bc': bc, 'de': de, 'hl': hl, 'afx': afx, 'bcx': bcx, 'dex': dex, 'hlx': hlx,
+                'ix': ix, 'iy': iy, 'sp': sp, 'pc': pc,
+                'stack': [st0, st1, st2, st3, st4, st5, st6, st7],
+                'bank': bank,
+                'ramonly': ramonly,
+            }
+
+    def step_nmi(self):
+        self.send('N')
+        ok, r = self.get_response()
+        return self.step_status(r)
+
+    def next(self):
+        self.send('n')
+        ok, r = self.get_response()
+        return self.step_status(r)
+
+    def reset(self):
+        self.send('X')
+        ok, _ = self.get_response()
+        return ok
+
+    def swap_breakpoint(self, bkp):
+        self.send('B', [bkp])
+        ok, r = self.get_response()
+        return r
+
+    def debug_run(self):
+        self.send('D')
+        ok, r = self.get_response()
+        return r[0]
+
+    def run(self):
+        self.send('r')
+        self.get_response()
