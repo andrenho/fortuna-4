@@ -7,7 +7,8 @@ import time
 
 class Fortuna:
 
-    def __init__(self, project_root="../.."):
+    def __init__(self, debug=True, project_root="../.."):
+        self.debug = debug
         self.project_root = project_root
         result = subprocess.run(project_root + "/tools/findserial.py dbg", stdout=subprocess.PIPE, shell=True)
         if result.returncode != 0:
@@ -21,7 +22,8 @@ class Fortuna:
     def get_response(self, convert_to_int=True):
         self.ser.readline()
         r = self.ser.readline().decode('utf-8').replace('\r', '').replace('\n', '')
-        print("<- " + r)
+        if self.debug:
+            print("<- " + r)
         s = r.split()
         if convert_to_int:
             return s[0] == '+', list(map(lambda h: int(h, 16), s[1:]))
@@ -30,7 +32,8 @@ class Fortuna:
 
     def send(self, cmd, pars=[]):
         req = cmd + ' ' + ' '.join(map(lambda v: '%x' % v, pars))
-        print("-> " + req)
+        if self.debug:
+            print("-> " + req)
         self.ser.write(bytes(req + '\n', 'utf-8'))
 
     def ack(self):
@@ -69,7 +72,7 @@ class Fortuna:
         self.send('W', args)
         assert self.get_response()[0]
 
-    def steps(self, steps):
+    def execute(self, steps):
         self.send('X')
         assert self.get_response()[0]
         self.send('S')
@@ -78,8 +81,14 @@ class Fortuna:
             self.send('S')
             assert self.get_response()[0]
 
-    def read_ram(self, addr):
-        self.send('R', [addr, 1])
+    def read_ram(self, addr, n_bytes):
+        self.send('R', [addr, n_bytes])
         r, v = self.get_response()
         assert r
-        return v[1]
+        return v[1:]
+
+    def write_ram(self, addr, bytes):
+        args = [addr, len(bytes)]
+        args.extend(bytes)
+        self.send('W', args)
+        assert self.get_response()[0]
