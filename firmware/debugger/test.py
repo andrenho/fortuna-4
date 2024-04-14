@@ -39,22 +39,25 @@ class Fortuna4Tests(unittest.TestCase):
 
     def test_z80_write_to_mem(self):
         self.fortuna.ack()
-        self.fortuna.upload('''
-            ld      hl, 0x1000
-            ld      b, 0xff
-        loop:
-            ld      (hl), b
-            inc     hl
-            djnz    loop
-        done:
-            jp      done
-        ''')
-        self.fortuna.reset()
         self.fortuna.swap_breakpoint(9)
-        self.fortuna.debug_run()
-        expected = [i for i in range(1, 256)]
-        expected.reverse()
-        self.assertEqual(self.fortuna.read_ram(0x1000, 255), expected)
+        for i in range(100):
+            addr = random.randrange(100, 64 * 1024 - 300)
+            self.fortuna.upload('''
+                ld      hl, ''' + str(addr) + '''
+                ld      b, 0xff
+            loop:
+                ld      (hl), b
+                inc     hl
+                djnz    loop
+            done:
+                jp      done
+            ''')
+            self.fortuna.reset()
+            self.fortuna.debug_run()
+            #self.fortuna.execute(1000)
+            expected = [i for i in range(1, 256)]
+            expected.reverse()
+            self.assertEqual(self.fortuna.read_ram(addr, 255), expected)
 
 if __name__ == '__main__':
     unittest.main()

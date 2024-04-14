@@ -125,7 +125,7 @@ void release_mem()
 
     // mreq = PD1
     SET_DIR(D, 1, 0)
-    SET_PIN(D, 3, 1)  // pull-up
+    SET_PIN(D, 1, 1)  // pull-up
 }
 
 // TODO --------
