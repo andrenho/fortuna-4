@@ -50,7 +50,7 @@ class Fortuna:
             exe += '.exe'
         if platform.system() == 'Darwin':
             exe += '_macos'
-        if platform.machine() == 'armv71':
+        if platform.machine() == 'armv7l':
             exe += '_rpi'
 
         if source != None:
