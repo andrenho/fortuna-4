@@ -4,6 +4,10 @@
 - [x] Adapt debugger to the library
 - [x] Reorganize source code
 
+# Computer
+- [x] Create circuit
+- [ ] Make changes (add boot)
+
 # I/O board
 - [ ] I/O using PIO
 - [ ] Serial
@@ -13,3 +17,4 @@
 
 # Documentation
 - [ ] Copy documentation over from Fortuna-Box
+- [ ] Document boot process

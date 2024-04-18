@@ -11,7 +11,11 @@
 #define CLKENA PINA0
 #define RST    PORTA1
 
-static const uint8_t binary[] = { 0x1, 0x2, 0x4, 0x5 };
+static const uint8_t binary[] = {
+    0x06, 0xff,         // ld b, 0xff
+    0x21, 0x06,         // ld hl, 6
+    0xed, 0xb2,         // inir
+};
 
 static void set_memwrite(bool write)
 {
