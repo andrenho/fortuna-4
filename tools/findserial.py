@@ -39,12 +39,13 @@ else:
         if not devname.startswith("bus/"):
             result3 = subprocess.run("udevadm info -q property --export -p " + sysdevpath.removesuffix("/dev"), stdout=subprocess.PIPE, shell=True)
             vrs = result3.stdout.decode("utf-8").rstrip()
-            vendor_id = re.search("""ID_VENDOR_ID='(....)""", vrs).group(1)
-            product_id = re.search("""ID_MODEL_ID='(....)""", vrs).group(1)
-            if (sys.argv[1] == "io" and product_id == IO_PRODUCT_ID and vendor_id == IO_VENDOR_ID) \
-                    or (sys.argv[1] == "dbg" and product_id == DBG_PRODUCT_ID and vendor_id == DBG_VENDOR_ID):
-                print("/dev/" + devname)
-                sys.exit(0)
+            if "ID_VENDOR_ID" in vrs and "ID_MODEL_ID" in vrs:
+                vendor_id = re.search("""ID_VENDOR_ID='(....)""", vrs).group(1)
+                product_id = re.search("""ID_MODEL_ID='(....)""", vrs).group(1)
+                if (sys.argv[1] == "io" and product_id == IO_PRODUCT_ID and vendor_id == IO_VENDOR_ID) \
+                        or (sys.argv[1] == "dbg" and product_id == DBG_PRODUCT_ID and vendor_id == DBG_VENDOR_ID):
+                    print("/dev/" + devname)
+                    sys.exit(0)
 
     print("Device not found")
     sys.exit(1)
