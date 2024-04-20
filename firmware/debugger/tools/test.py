@@ -35,6 +35,12 @@ class Fortuna4Tests(unittest.TestCase):
                 self.fortuna.write_ram(address, data)
                 self.assertEqual(self.fortuna.read_ram(address, len(data)), data)
 
+    def test_boot_code(self):
+        expected = [0x06, 0xff, 0x21, 0x06, 0xed, 0xb2]
+        self.fortuna.ack()
+        boot_area = self.fortuna.read_ram(0, len(expected))
+        self.assertEqual(expected, boot_area)
+
     def test_z80_write_to_mem(self):
         self.fortuna.ack()
         self.fortuna.swap_breakpoint(9)

@@ -9,6 +9,9 @@ int main()
 {
     uart_init();
     random::init();
+
+    _delay_ms(200);
+
     bus::init();
     z80::init();
 
