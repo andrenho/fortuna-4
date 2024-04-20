@@ -44,13 +44,13 @@ static void write_ram(void)
 
 static void z80_reset(void)
 {
-    if (PINA & (1 << CLKENA)) {  // if 1, then clock is enabled and we just wait
-        _delay_ms(1);
-    } else {
-        for (size_t i = 0; i < 100; ++i) {  // do 50 cycles with the CPU in reset
+    if (PINA & (1 << CLKENA)) {  // if 1, then clock is disabled and we do 50 cycles with the CPU in reset
+        for (size_t i = 0; i < 100; ++i) {
             DDRD |= (1 << CLK);
             DDRD &= ~(1 << CLK);
         }
+    } else {  // otherwise we just wait for the external cycles
+        _delay_ms(1);
     }
 }
 
@@ -66,8 +66,8 @@ int main(void)
     set_memwrite(false);
     PORTA &= ~(1 << RST);   // RST = 0 (resetting)
 
-    write_ram();
     z80_reset();
+    write_ram();
 
     DDRB = 0;
     DDRD = 0;
