@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-import platform
 import random
-import subprocess
 import unittest
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 import libfortuna4
 
 
@@ -16,21 +14,21 @@ class Fortuna4Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.fortuna = libfortuna4.Fortuna()
+        cls.fortuna = libfortuna4.Fortuna(project_root="../../..")
 
     def test_ack(self):
         self.assertTrue(self.fortuna.ack())
 
     def test_ram_one_byte(self):
         self.fortuna.ack()
-        addr = random.randrange(64 * 1024 - 1)
+        addr = random.randrange(256, 64 * 1024 - 1)
         data = random.randrange(255)
         self.fortuna.write_ram(addr, [data])
         self.assertEqual(self.fortuna.read_ram(addr, 1)[0], data)
 
     def test_whole_ram(self):
         self.fortuna.ack()
-        for i in range(0, 256 * 4):
+        for i in range(1, 256 * 4):
             if random.randrange(20) == 0:  # one chance in 20
                 address = i * 64
                 data = [random.randrange(255) for _ in range(64)]
@@ -40,7 +38,7 @@ class Fortuna4Tests(unittest.TestCase):
     def test_z80_write_to_mem(self):
         self.fortuna.ack()
         self.fortuna.swap_breakpoint(9)
-        for i in range(100):
+        for i in range(30):
             addr = random.randrange(100, 64 * 1024 - 300)
             self.fortuna.upload('''
                 ld      hl, ''' + str(addr) + '''

@@ -28,8 +28,8 @@ bool set(uint16_t addr, uint8_t data)
     _NOP();
 
     // release pins
-    bus::release_addr();
     bus::release_mem();
+    bus::release_addr();
     bus::set_data(~data);  // mess up DATA
     bus::release_data();
 
