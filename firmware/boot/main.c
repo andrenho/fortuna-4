@@ -56,9 +56,9 @@ static void z80_reset(void)
 
 int main(void)
 {
-    DDRB = 0xff;      // DATA line: output
-    DDRD = 0b110111;  // A0-A3, CLK, MREQ, WR: output
-    DDRA = 0b10;      // RST: output, CLKENA: input
+    DDRB = 0xff;       // DATA line: output
+    DDRD = 0b1101111;  // A0-A3, CLK, MREQ, WR: output
+    DDRA = 0b10;       // RST: output, CLKENA: input
 
     if (PINA & (1 << CLKENA))   // if 0, then clock is disabled so we need to set CLK as output
         DDRD |= (1 << DDD4);
