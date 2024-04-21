@@ -1,7 +1,7 @@
 I/O procedure:
     wait until IORQ is down;
+    pull WAIT down;
     if WR is down:
-        pull WAIT down;
         read A;
         read DATA;
         case A = 0:
@@ -10,7 +10,6 @@ I/O procedure:
             write DATA to buffer;
         case A = 2:
             execute command;
-        pull WAIT up;
     else (if WR is up):
         read A;
         case A = 0:
@@ -19,4 +18,5 @@ I/O procedure:
             put next buffer byte in DATA;
         case A = 2:
             put status byte in DATA;
+    pull WAIT up;
     wait until IORQ is up;

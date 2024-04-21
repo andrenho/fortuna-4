@@ -24,19 +24,29 @@ void init()
     gpio_put(WAIT, true);
 }
 
+static void set_data(uint8_t data)
+{
+    uint32_t all_pins = gpio_get_all();
+    gpio_put_all(all_pins);
+}
+
 void loop()
 {
     while (true) {
         uint32_t pins = gpio_get_all();
+        gpio_put(WAIT, false);
 
         if ((pins & (1 << IORQ)) == 0) {
 
-            if ((pins & (1 << WR)) == 0) {
+            if ((pins & (1 << WR)) == 0) {  // write operation
 
-            } else {  // WR is up
-
+            } else {  // WR is up (read operation)
+                set_data(0x53);
             }
         }
+
+        gpio_put(WAIT, true);
+        while (gpio_get(IORQ) == 0);  // wait until IORQ is released
     }
 }
 
