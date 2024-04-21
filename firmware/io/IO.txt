@@ -1,0 +1,22 @@
+I/O procedure:
+    wait until IORQ is down;
+    if WR is down:
+        pull WAIT down;
+        read A;
+        read DATA;
+        case A = 0:
+            write DATA to serial;
+        case A = 1:
+            write DATA to buffer;
+        case A = 2:
+            execute command;
+        pull WAIT up;
+    else (if WR is up):
+        read A;
+        case A = 0:
+            put last serial input in DATA;
+        case A = 1:
+            put next buffer byte in DATA;
+        case A = 2:
+            put status byte in DATA;
+    wait until IORQ is up;

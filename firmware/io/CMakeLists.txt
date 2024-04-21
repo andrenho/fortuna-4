@@ -8,7 +8,9 @@ set(CMAKE_CXX_STANDARD 17)
 pico_sdk_init()
 
 add_executable(${CMAKE_PROJECT_NAME}
-		src/main.c
+		src/main.cc
+		src/io.cc
+		src/io.hh
 )
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME}
