@@ -41,7 +41,7 @@ add_custom_target(upload-remote
 )
 
 add_custom_target(talk
-	COMMAND screen /dev/ttyACM0 115200
+	COMMAND screen `${CMAKE_SOURCE_DIR}/findserial.py io` 115200
 )
 
 pico_enable_stdio_usb(${CMAKE_PROJECT_NAME} 1)

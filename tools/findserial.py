@@ -18,6 +18,7 @@ if len(sys.argv) != 2 or (sys.argv[1] != "dbg" and sys.argv[1] != "io"):
     sys.exit(1)
 
 if platform.system() == "Darwin":
+    IO_PRODUCT_ID="a"
     result = subprocess.run("""
        ioreg -r -c IOUSBHostDevice -x -l | perl -ne 'BEGIN {} /"USB Serial Number" = "(.+)"/ && ($sn=$1); /"idProduct" = (.+)/ && ($ip=$1); /"idVendor" = (.+)/ && ($iv=$1); /"IOCalloutDevice" = "(.+)"/ && print "$sn,$ip,$iv,$1\n"'
     """, stdout=subprocess.PIPE, shell=True)
