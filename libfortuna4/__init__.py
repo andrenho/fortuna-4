@@ -86,14 +86,16 @@ class Fortuna:
         self.send('W', args)
         assert self.get_response()[0]
 
-    def execute(self, steps):
+    def steps(self, nsteps):
+        for _ in range(nsteps):
+            self.send('S')
+            assert self.get_response()[0]
+
+    def execute(self, nsteps):
         self.send('X')
         assert self.get_response()[0]
         self.send('S')
-        assert self.get_response()[0]
-        for _ in range(steps):
-            self.send('S')
-            assert self.get_response()[0]
+        self.steps(nsteps)
 
     def read_ram(self, addr, n_bytes):
         self.send('R', [addr, n_bytes])

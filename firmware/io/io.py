@@ -13,10 +13,11 @@ import libfortuna4
 fortuna = libfortuna4.Fortuna()
 fortuna.ack()
 
+fortuna.reset()
+
 fortuna.upload('''
-    in  a, (0)
-    ld  a, (0x60)
-    nop
+    in  a, (0)       ; DB 00
+    ld  a, (0x60)    ; 3A 60 00
 ''')
 
 """
@@ -27,7 +28,13 @@ x:  jp x
 ''')
 """
 
-fortuna.execute(3)
+fortuna.reset()
+#input()
+fortuna.steps(1)
+#input()
+fortuna.steps(1)
+#input()
+fortuna.steps(1)
 
 print(hex(fortuna.read_ram(0x60, 1)[0]))
 # self.assertEqual(self.fortuna.read_ram(addr, 1)[0], byte)

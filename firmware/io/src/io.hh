@@ -1,6 +1,8 @@
 #ifndef IO_HH_
 #define IO_HH_
 
+#include <cstdint>
+
 namespace io {
 
 void init();
