@@ -8,8 +8,10 @@ int main()
 {
     stdio_usb_init();
 
+    /*
     io::init();
     io::loop();
+     */
 
     for (;;);
 }
