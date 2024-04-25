@@ -15,26 +15,13 @@ fortuna.ack()
 
 fortuna.reset()
 
-fortuna.upload('''
-    in  a, (0)       ; DB 00
-    ld  a, (0x60)    ; 3A 60 00
+fortuna.upload_and_run('''
+    ld  a, 0x38
+    out (1), a
+    ld  a, 0xff
+    in  a, (1)       ; DB 00
+    ld  (0x60), a    ; 32 60 00
 ''')
-
-"""
-fortuna.upload('''
-    ld  a, 'H'
-    out (0), a
-x:  jp x
-''')
-"""
-
-fortuna.reset()
-#input()
-fortuna.steps(1)
-#input()
-fortuna.steps(1)
-#input()
-fortuna.steps(1)
 
 print(hex(fortuna.read_ram(0x60, 1)[0]))
 # self.assertEqual(self.fortuna.read_ram(addr, 1)[0], byte)

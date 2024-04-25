@@ -1,30 +1,5 @@
-    ld  a, 0b11
-    out (0x1), a
-
-    ld  a, 0b10010110
-    out (0x1), a
-
-aa:
-    ld  a, 'H'
-    call    print
-
-    ld  a, 'e'
-    call    print
-
-    ld  a, 'e'
-    call    print
-
-    ld  a, 'o'
-    call    print
-
-j: jr aa
-
-print:
-        push	af
-.reg_not_empty
-	in	a, (0x1)
-	and	0b10
-	jr	z, .reg_not_empty
-	pop	af
-        out	(0x5), a
-        ret
+    ld  a, 0x38
+    out (1), a
+    ld  a, 0xff
+    in  a, (1)       ; DB 00
+    ld  (0x60), a    ; 32 60 00

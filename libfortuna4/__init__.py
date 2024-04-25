@@ -85,6 +85,7 @@ class Fortuna:
         args.extend(rom)
         self.send('W', args)
         assert self.get_response()[0]
+        return len(rom)
 
     def steps(self, nsteps):
         for _ in range(nsteps):
@@ -182,3 +183,9 @@ class Fortuna:
     def run(self):
         self.send('r')
         self.get_response()
+
+    def upload_and_run(self, source):
+        bkp = self.upload(source)
+        self.swap_breakpoint(bkp)
+        self.reset()
+        self.debug_run()

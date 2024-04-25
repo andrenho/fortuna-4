@@ -46,7 +46,7 @@ class Fortuna4Tests(unittest.TestCase):
         self.fortuna.swap_breakpoint(9)
         for i in range(30):
             addr = random.randrange(100, 64 * 1024 - 300)
-            self.fortuna.upload('''
+            self.fortuna.upload_and_run('''
                 ld      hl, ''' + str(addr) + '''
                 ld      b, 0xff
             loop:
@@ -56,9 +56,6 @@ class Fortuna4Tests(unittest.TestCase):
             done:
                 jp      done
             ''')
-            self.fortuna.reset()
-            self.fortuna.debug_run()
-            #self.fortuna.execute(1000)
             expected = [i for i in range(1, 256)]
             expected.reverse()
             self.assertEqual(self.fortuna.read_ram(addr, 255), expected)

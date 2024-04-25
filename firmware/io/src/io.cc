@@ -2,6 +2,7 @@
 
 #include <hardware/gpio.h>
 #include <cstdio>
+#include <pico/time.h>
 
 #define IORQ  1
 #define WAIT 22
@@ -14,11 +15,18 @@ namespace io {
 
 static const uint32_t DATA_MASK = 0b00000000001111111100000000000000;
 
+volatile uint32_t pins_on_iorq = 0;  // 0 = no iorq
+
+static void iorq_callback(uint gpio, uint32_t event_mask)
+{
+    pins_on_iorq = gpio_get_all();
+    gpio_put(WAIT, 0);
+}
+
 void init()
 {
     gpio_init(A0);
     gpio_init(A1);
-    gpio_init(IORQ);
     gpio_init(WR);
 
     gpio_init_mask(DATA_MASK);
@@ -26,6 +34,14 @@ void init()
     gpio_init(WAIT);
     gpio_set_dir(WAIT, GPIO_OUT);
     gpio_put(WAIT, 1);
+
+    gpio_init(IORQ);
+    gpio_set_irq_enabled_with_callback(IORQ, GPIO_IRQ_EDGE_FALL, true, iorq_callback);
+}
+
+static uint8_t get_data(uint32_t pins)
+{
+    return (pins >> 14) & 0xff;
 }
 
 static void set_data(uint8_t data)
@@ -36,29 +52,34 @@ static void set_data(uint8_t data)
 
 static void release_data()
 {
-    gpio_put_masked(DATA_MASK, 0);
+    // gpio_put_masked(DATA_MASK, 0);
     gpio_set_dir_in_masked(DATA_MASK);
 }
 
 void loop()
 {
+    volatile uint8_t data = 0x0;
+
     while (true) {
-        uint32_t pins = gpio_get_all();
+        if (pins_on_iorq != 0) {
 
-        if ((pins & (1 << IORQ)) == 0) {
-            gpio_put(WAIT, 0);
-            printf("-> %08lX\n", pins);
+            printf("-> %08lX\n", pins_on_iorq);
 
-            if ((pins & (1 << WR)) == 0) {  // write operation
+            if ((pins_on_iorq & (1 << WR)) == 0) {  // write operation
+                data = get_data(pins_on_iorq);
+                printf("data set as 0x%02X\n", data);
 
             } else {  // WR is up (read operation)
-                set_data(0x53);
+                set_data(data);
+                printf("returning data as 0x%02X\n", data);
             }
             gpio_put(WAIT, 1);
-        }
 
-        while (gpio_get(IORQ) == 0);  // wait until IORQ is released
-        release_data();
+            while (gpio_get(IORQ) == 0);  // wait until IORQ is released
+            release_data();
+
+            pins_on_iorq = 0;
+        }
     }
 }
 
