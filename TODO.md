@@ -6,10 +6,10 @@
 
 # Computer
 - [x] Create circuit
-- [ ] Make changes (add boot)
+- [x] Make changes (add boot)
 
 # I/O board
-- [ ] I/O using PIO
+- [x] I/O using PIO
 - [ ] Serial
 - [ ] VGA
 - [ ] Bank switching
