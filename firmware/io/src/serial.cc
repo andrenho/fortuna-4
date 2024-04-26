@@ -21,7 +21,7 @@ uint8_t read()
 {
     char data = last_char;
     last_char = 0x0;
-    return 'a';
+    return data;
 }
 
 void write(uint8_t data)

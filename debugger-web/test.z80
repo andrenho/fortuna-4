@@ -1,5 +1,7 @@
-    ld  a, 0x38
-    out (1), a
-    ld  a, 0xff
-    in  a, (1)       ; DB 00
-    ld  (0x60), a    ; 32 60 00
+start:
+    in  a, (0)      ; last character pressed
+    or  a           ; if no character (A == 0)
+    jr  z, start    ;   return to start
+    out (0), a      ; otherwise print character
+    jr  start
+
