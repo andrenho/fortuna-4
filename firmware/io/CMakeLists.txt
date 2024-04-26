@@ -13,6 +13,8 @@ add_executable(${CMAKE_PROJECT_NAME}
 		src/z80_iorq.hh
 		src/io.cc
 		src/io.hh
+		src/serial.cc
+		src/serial.hh
 )
 
 pico_generate_pio_header(${CMAKE_PROJECT_NAME}
