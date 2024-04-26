@@ -1,0 +1,16 @@
+.program io
+
+    set pins, 1         ; initial WAIT = 1 (normal operation)
+
+.wrap_target
+    wait 0 pin 0        ; wait until IORQ goes low
+    set pins, 0         ; immediately set WAIT as low (halts CPU)
+
+    push                ; pass control to RPI CPU (to execute the command)
+    pull block          ; operation complete, control is returned to the PIO
+
+    set pins, 1         ; set WAIT as high (normal operation)
+    wait 1 pin 0        ; wait until IORQ goes high (IRQ done)
+
+    push                ; pass control to RPI CPU (to release the data)
+.wrap

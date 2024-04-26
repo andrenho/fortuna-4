@@ -13,6 +13,10 @@ add_executable(${CMAKE_PROJECT_NAME}
 		src/io.hh
 )
 
+pico_generate_pio_header(${CMAKE_PROJECT_NAME}
+		${CMAKE_CURRENT_LIST_DIR}/src/io.pio
+)
+
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME}
 		POST_BUILD
 		COMMAND arm-none-eabi-size -G ${CMAKE_BINARY_DIR}/${CMAKE_PROJECT_NAME}.elf
@@ -47,4 +51,4 @@ add_custom_target(talk
 pico_enable_stdio_usb(${CMAKE_PROJECT_NAME} 1)
 pico_add_extra_outputs(${CMAKE_PROJECT_NAME})
 
-target_link_libraries(${CMAKE_PROJECT_NAME} pico_stdlib)
+target_link_libraries(${CMAKE_PROJECT_NAME} pico_stdlib hardware_pio)
