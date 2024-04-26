@@ -2,14 +2,12 @@
 
 #include <stdio.h>
 
-#include "io.hh"
+#include "z80_iorq.hh"
 
 int main()
 {
     stdio_usb_init();
 
-    io::init();
-    io::loop();
-
-    for (;;);
+    z80_iorq::init();
+    z80_iorq::loop();
 }

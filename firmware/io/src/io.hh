@@ -5,8 +5,8 @@
 
 namespace io {
 
-void init();
-void loop();
+uint8_t read(uint8_t port);
+void    write(uint8_t port, uint8_t data);
 
 }
 
