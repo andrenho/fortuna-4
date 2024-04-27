@@ -51,11 +51,18 @@ void init()
     uint offset = pio_add_program(pio, &io_program);
 
     pio_sm_config c = io_program_get_default_config(offset);
+    sm_config_set_clkdiv(&c, 1.0f);
+
+    // output pin (WAIT)
     pio_gpio_init(pio, WAIT);
     sm_config_set_set_pins(&c, WAIT, 1);
-    sm_config_set_in_pins(&c, IORQ);
     pio_sm_set_consecutive_pindirs(pio, sm, WAIT, 1, true);
-    sm_config_set_clkdiv(&c, 1.0f);
+
+    // input pins (all of them)
+    sm_config_set_in_pins(&c, 0);
+
+    // FIFO queues
+    sm_config_set_in_shift(&c, false, true, 15);
 
     pio_sm_init(pio, sm, offset, &c);
     pio_sm_set_enabled(pio, sm, true);
@@ -70,11 +77,9 @@ void init()
 void __not_in_flash_func(loop)()
 {
     for (;;) {
-        pio_sm_get_blocking(pio, sm);  // wait until signal received from PIO (IRQ low, WAIT low)
+        uint32_t pins = pio_sm_get_blocking(pio, sm);  // wait until signal received from PIO (IRQ low, WAIT low)
+        // printf("%08lX\n", pins);
 
-        // printf("X");
-
-        uint32_t pins = gpio_get_all();
         uint8_t addr = pins & 0b11;
 
         if ((pins & (1 << WR)) == 0) {  // write operation
