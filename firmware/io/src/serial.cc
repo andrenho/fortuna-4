@@ -2,6 +2,8 @@
 
 #include "pico/stdlib.h"
 
+#include <cstdio>
+
 namespace serial {
 
 static volatile char last_char = 0x0;
@@ -20,8 +22,9 @@ void init()
 uint8_t read()
 {
     int current = getchar_timeout_us(0);
-    if (current != 0 && current != PICO_ERROR_TIMEOUT)
+    if (current != 0 && current != PICO_ERROR_TIMEOUT) {
         return current;
+    }
     return 0;
     /*
     char data = last_char;
@@ -32,7 +35,7 @@ uint8_t read()
 
 void write(uint8_t data)
 {
-    putchar_raw(data);
+    putchar(data);
 }
 
 }

@@ -23,3 +23,7 @@ start:
     out (0), a      ; otherwise print character
     jr  start
 ''')
+
+#fortuna.reset()
+#while True:
+#    print(hex(fortuna.step()))

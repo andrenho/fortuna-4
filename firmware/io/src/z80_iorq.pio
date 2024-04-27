@@ -6,7 +6,7 @@
     wait 0 pin 0        ; wait until IORQ goes low
     set pins, 0         ; immediately set WAIT as low (halts CPU)
 
-    push                ; pass control to RPI CPU (to execute the command)
+    push                ; pass control to RPI CPU (execute code in `loop()`)
     pull block          ; operation complete, control is returned to the PIO
 
     set pins, 1         ; set WAIT as high (normal operation)
